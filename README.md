@@ -1,0 +1,1 @@
+Build with: `cross build --target armv5te-unknown-linux-gnueabi --release`
