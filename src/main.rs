@@ -1,52 +1,25 @@
-use rustbus::{get_system_bus_path, standard_messages, Conn, MessageBuilder, message};
+use rustbus::{RpcConn, MessageBuilder, client_conn::Timeout, wire};
 
- fn main() -> Result<(), rustbus::client_conn::Error> {
-     // Connect to the session bus
-     let session_path = get_system_bus_path()?;
-     let con = Conn::connect_to_bus(session_path, true)?;
+fn main() -> Result<(), rustbus::client_conn::Error> {
+    // Connect to the session bus
+    let mut rpc_con = RpcConn::system_conn(Timeout::Infinite)?;
 
-     // Wrap the con in an RpcConnection which provides many convenient functions
-     let mut rpc_con = rustbus::client_conn::RpcConn::new(con);
+    // create a signal with the MessageBuilder API
+    let mut sig = MessageBuilder::new()
+    .call("Get".into())
+    .on("/xyz/openbmc_project/inventory/system".into())
+    .with_interface("org.freedesktop.DBus.Properties".into())
+    .at("xyz.openbmc_project.Inventory.Manager".into())
+    .build();
 
-
-
-     // send the obligatory hello message
-    rpc_con.send_message(&mut standard_messages::hello(), None)?;
-
-    let serial = rpc_con.send_message(&mut get_serial(), None)?;
-    let resp = rpc_con.wait_response(serial, None)?;
-
+    sig.body.push_param2(String::from("xyz.openbmc_project.Inventory.Decorator.AssetTag").as_str(),
+        String::from("AssetTag").as_str()).expect("Unable to push_param2");
+    // send a signal to all bus members
+    let serial = rpc_con.send_message(&mut sig, Timeout::Infinite)?;
+    let resp = rpc_con.wait_response(serial, Timeout::Infinite)?;
     
-    println!("{:?}", resp);
+    println!("{:?}", resp.unmarshall_all()?);
+    
 
-    //  // Request a bus name if you want to
-    //  rpc_con.send_message(&mut standard_messages::request_name(
-    //      "io.killing.spark".into(),
-    //      0,
-    //  ), None)?;
-
-    //  // send a signal to all bus members
-    //  let mut sig = MessageBuilder::new()
-    //  .signal(
-    //      "io.killing.spark".into(),
-    //      "TestSignal".into(),
-    //      "/io/killing/spark".into(),
-    //  )
-    //  .with_params(vec![
-    //      Container::Struct(vec![162254319i32.into(), "AABB".to_owned().into()]).into(),
-    //  ])
-    //  .build();
-    //  rpc_con.send_message(&mut sig, None)?;
-     Ok(())
- }
-
- pub fn get_serial<'a, 'e>() -> message::Message<'a, 'e> {
-    MessageBuilder::new()
-        .call("Get".into())
-        .on("/xyz/openbmc_project/inventory/system".into())
-        .with_interface("xyz.openbmc_project.Inventory.Manager".into())
-        .at("xyz.openbmc_project.Inventory.Decorator.AssetTag.AssetTag".into())
-        .build()
- }
-
- // cross build --target armv5te-unknown-linux-gnueabi --release
+    Ok(())
+}
