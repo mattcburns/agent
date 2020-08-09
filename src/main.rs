@@ -1,4 +1,4 @@
-use rustbus::{RpcConn, MessageBuilder, client_conn::Timeout, wire};
+use rustbus::{RpcConn, MessageBuilder, client_conn::Timeout, params::Container};
 
 fn main() -> Result<(), rustbus::client_conn::Error> {
     // Connect to the session bus
@@ -18,7 +18,14 @@ fn main() -> Result<(), rustbus::client_conn::Error> {
     let serial = rpc_con.send_message(&mut sig, Timeout::Infinite)?;
     let resp = rpc_con.wait_response(serial, Timeout::Infinite)?;
     
-    println!("{:?}", resp.unmarshall_all()?);
+    let um = resp.unmarshall_all();
+
+    match um {
+        Container::Variant::Variant => println!(sig),
+        _ => println!("oops, fix this"),
+    }
+
+    //println!("{:?}", resp.unmarshall_all()?);
     
 
     Ok(())
