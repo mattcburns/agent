@@ -11,9 +11,3 @@ rustbus = "0.6.0"
 restson = "^0.6"
 serde = "^1.0"
 serde_derive = "^1.0"
-
-[source.crates-io]
-replace-with = "vendored-sources"
-
-[source.vendored-sources]
-directory = "vendor"
