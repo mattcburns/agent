@@ -2,10 +2,10 @@ use rustbus::{RpcConn, MessageBuilder, client_conn::Timeout, params::Container};
 use rustbus::params::{Param, Base};
 
 fn main() {
-    println!("Serial: {:?}", get_serial_number())
+    println!("Serial: {:?}", get_serial_number()?)
 }
 
-fn get_serial_number() -> String {
+fn get_serial_number() -> Result<String, Error> {
     let mut rpc_con = RpcConn::system_conn(Timeout::Infinite)?;
 
     let mut sig = MessageBuilder::new()
@@ -39,5 +39,5 @@ fn get_serial_number() -> String {
         }
     }
 
-    z
+    Ok(z)
 }
