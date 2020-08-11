@@ -1,7 +1,11 @@
 use rustbus::{RpcConn, MessageBuilder, client_conn::Timeout, params::Container};
 use rustbus::params::{Param, Base};
 
-fn main() -> Result<(), rustbus::client_conn::Error> {
+fn main() {
+    println!("Serial: {:?}", get_serial_number())
+}
+
+fn get_serial_number() -> String {
     let mut rpc_con = RpcConn::system_conn(Timeout::Infinite)?;
 
     let mut sig = MessageBuilder::new()
@@ -23,6 +27,7 @@ fn main() -> Result<(), rustbus::client_conn::Error> {
 
     let s = &r.params[0];
 
+    let mut z = String::from("Unknown");
     // This is super ugly, need to figure out how to improve
     if let Param::Container(v) = s {
         if let Container::Variant(x) = v {
@@ -34,5 +39,5 @@ fn main() -> Result<(), rustbus::client_conn::Error> {
         }
     }
 
-    Ok(())
+    z
 }
