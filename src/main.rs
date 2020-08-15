@@ -36,16 +36,16 @@ fn get_serial_number() -> Result<String, Box<dyn Error>> {
         Err(e) => panic!(e),
     };
 
-    let r = match resp.unmarshall_all(){
-        Ok(r) => r,
+    let message = match resp.unmarshall_all(){
+        Ok(message) => message,
         Err(e) => panic!(e),
     };
 
-    let s = &r.params[0];
+    let first_param = &message.params[0];
 
 
     // This is super ugly, need to figure out how to improve
-    if let Param::Container(v) = s {
+    if let Param::Container(v) = first_param {
         if let Container::Variant(x) = v {
             if let Param::Base(y) = &x.value {
                 if let Base::String(z) = &y {
